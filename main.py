@@ -1,4 +1,5 @@
 import random
+from sre_constants import error
 
 
 def read_grid():
@@ -322,21 +323,21 @@ if backtracking_solution:
     print(f'\n\nSolved Sudoku puzzle with backtracking:')
     print_grid(grid)
 else:
-    print('No solution exists!')
+    print('backtracking failed')
 
 forward_checking_solution = solve_fc(grid, domains)
 if forward_checking_solution:
     print(f'\n\nSolved Sudoku puzzle with Forward Checking:')
     print_grid(grid)
 else:
-    print("No solution exists")
+    print("forward checking failed")
 
 heuristic_solution = solve_heuristic(grid, domains)
 if heuristic_solution:
     print(f'\n\nSolved Sudoku puzzle with Heuristic Algorithm:')
     print_grid(grid)
 else:
-    print("No solution exists using heuristic method")
+    print("heuristic algorithm failed")
 
 # test all three solutions
 assert backtracking_solution == forward_checking_solution == heuristic_solution
