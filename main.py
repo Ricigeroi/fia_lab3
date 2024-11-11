@@ -19,8 +19,15 @@ def read_grid():
     return grid
 
 def print_grid(grid):
-    for row in grid:
-        print(''.join(str(num) for num in row))
+    for i, row in enumerate(grid):
+        if i % 3 == 0 and i != 0:
+            print("-" * 23)
+        for j, num in enumerate(row):
+            if j % 3 == 0 and j != 0:
+                print(" | ", end="")
+            print(num if num != 0 else ".", end=" ")
+        print()
+
 
 def find_empty(grid):
     for i in range(9):
@@ -103,12 +110,13 @@ puzzle_grid = remove_numbers(full_grid, holes=40)
 # Read the Sudoku grid
 print("\nGenerated Sudoku puzzle:")
 print_grid(puzzle_grid)
+
+# TODO: user should be able to choose between manual input and auto-gen board
 #grid = read_grid()
 grid = puzzle_grid
 
 
 # Task 2: Constraint Propagation
-
 def initialize_domains(grid):
     domains = [[set(range(1,10)) for _ in range(9)] for _ in range(9)]
     for i in range(9):
@@ -151,7 +159,6 @@ domains = initialize_domains(grid)
 domains = propagate_constraints(domains)
 
 # Task 3: Backtracking with Forward Checking
-
 def solve_fc(grid, domains):
     # Find the unassigned cell with the smallest domain
     min_domain_size = 10
@@ -219,9 +226,7 @@ def solve_fc(grid, domains):
     return False
 
 
-
-# Your heuristic solver code
-
+# Task 4: Heuristic Algorithm
 def get_units():
     units = []
     # Rows
