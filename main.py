@@ -1,3 +1,6 @@
+import random
+
+
 def read_grid():
     grid = []
     for _ in range(9):
@@ -59,15 +62,50 @@ def solve(grid):
             grid[row][col] = 0
     return False
 
-# Read the Sudoku grid
-grid = read_grid()
+def generate_full_grid():
+    grid = [[0]*9 for _ in range(9)]
+    numbers = list(range(1, 10))
 
-# Solve the Sudoku puzzle
-if solve(grid):
-    print(f'\n\nSolved Sudoku puzzle:')
-    print_grid(grid)
-else:
-    print('No solution exists!')
+    def fill_grid(grid):
+        for i in range(9):
+            for j in range(9):
+                if grid[i][j] == 0:
+                    random.shuffle(numbers)
+                    for num in numbers:
+                        if is_valid(grid, num, (i, j)):
+                            grid[i][j] = num
+                            if not find_empty(grid) or fill_grid(grid):
+                                return True
+                            grid[i][j] = 0
+                    return False
+        return True
+
+    fill_grid(grid)
+    return grid
+
+def remove_numbers(grid, holes=40):
+    grid_copy = [row[:] for row in grid]
+    count = 0
+    while count < holes:
+        i = random.randint(0, 8)
+        j = random.randint(0, 8)
+        if grid_copy[i][j] != 0:
+            grid_copy[i][j] = 0
+            count += 1
+    return grid_copy
+
+# Generate a full valid Sudoku grid
+full_grid = generate_full_grid()
+
+# Remove numbers to create a puzzle
+puzzle_grid = remove_numbers(full_grid, holes=40)
+
+# Read the Sudoku grid
+print("\nGenerated Sudoku puzzle:")
+print_grid(puzzle_grid)
+#grid = read_grid()
+grid = puzzle_grid
+
 
 # Task 2: Constraint Propagation
 
@@ -180,12 +218,7 @@ def solve_fc(grid, domains):
             return True
     return False
 
-# Solve the Sudoku puzzle with Forward Checking
-if solve_fc(grid, domains):
-    print(f'\n\nSolved Sudoku puzzle with Forward Checking:')
-    print_grid(grid)
-else:
-    print("No solution exists")
+
 
 # Your heuristic solver code
 
@@ -278,9 +311,27 @@ def solve_heuristic(grid, domains):
 domains = initialize_domains(grid)
 domains = propagate_constraints(domains)
 
-# Solve the Sudoku puzzle with Heuristic Method
-if solve_heuristic(grid, domains):
+
+backtracking_solution = solve(grid)
+if backtracking_solution:
+    print(f'\n\nSolved Sudoku puzzle with backtracking:')
+    print_grid(grid)
+else:
+    print('No solution exists!')
+
+forward_checking_solution = solve_fc(grid, domains)
+if forward_checking_solution:
+    print(f'\n\nSolved Sudoku puzzle with Forward Checking:')
+    print_grid(grid)
+else:
+    print("No solution exists")
+
+heuristic_solution = solve_heuristic(grid, domains)
+if heuristic_solution:
     print(f'\n\nSolved Sudoku puzzle with Heuristic Algorithm:')
     print_grid(grid)
 else:
     print("No solution exists using heuristic method")
+
+# test all three solutions
+assert backtracking_solution == forward_checking_solution == heuristic_solution
