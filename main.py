@@ -187,4 +187,100 @@ if solve_fc(grid, domains):
 else:
     print("No solution exists")
 
+# Your heuristic solver code
 
+def get_units():
+    units = []
+    # Rows
+    for i in range(9):
+        units.append([(i, j) for j in range(9)])
+    # Columns
+    for j in range(9):
+        units.append([(i, j) for i in range(9)])
+    # Boxes
+    for box_row in range(3):
+        for box_col in range(3):
+            unit = []
+            for i in range(box_row * 3, box_row * 3 + 3):
+                for j in range(box_col * 3, box_col * 3 + 3):
+                    unit.append((i, j))
+            units.append(unit)
+    return units
+
+def solve_heuristic(grid, domains):
+    progress = True
+    while progress:
+        progress = False
+        # Naked Singles
+        for i in range(9):
+            for j in range(9):
+                if grid[i][j] == 0 and len(domains[i][j]) == 1:
+                    value = next(iter(domains[i][j]))
+                    grid[i][j] = value
+                    domains[i][j] = set([value])
+                    # Remove value from peers
+                    # Row
+                    for col in range(9):
+                        if col != j and value in domains[i][col]:
+                            domains[i][col].remove(value)
+                            progress = True
+                    # Column
+                    for row in range(9):
+                        if row != i and value in domains[row][j]:
+                            domains[row][j].remove(value)
+                            progress = True
+                    # Box
+                    box_row = i // 3
+                    box_col = j // 3
+                    for row in range(box_row * 3, box_row * 3 + 3):
+                        for col in range(box_col * 3, box_col * 3 + 3):
+                            if (row != i or col != j) and value in domains[row][col]:
+                                domains[row][col].remove(value)
+                                progress = True
+        # Hidden Singles
+        for unit in get_units():
+            counts = {}
+            for (i, j) in unit:
+                if grid[i][j] == 0:
+                    for value in domains[i][j]:
+                        counts.setdefault(value, []).append((i, j))
+            for value, positions in counts.items():
+                if len(positions) == 1:
+                    i, j = positions[0]
+                    if grid[i][j] == 0:
+                        grid[i][j] = value
+                        domains[i][j] = set([value])
+                        # Remove value from peers
+                        # Row
+                        for col in range(9):
+                            if col != j and value in domains[i][col]:
+                                domains[i][col].remove(value)
+                                progress = True
+                        # Column
+                        for row in range(9):
+                            if row != i and value in domains[row][j]:
+                                domains[row][j].remove(value)
+                                progress = True
+                        # Box
+                        box_row = i // 3
+                        box_col = j // 3
+                        for row in range(box_row * 3, box_row * 3 + 3):
+                            for col in range(box_col * 3, box_col * 3 + 3):
+                                if (row != i or col != j) and value in domains[row][col]:
+                                    domains[row][col].remove(value)
+                                    progress = True
+        # Check if grid is complete
+        if all(grid[i][j] != 0 for i in range(9) for j in range(9)):
+            return True  # Solved
+    return False  # No further progress can be made
+
+# Initialize domains and propagate constraints
+domains = initialize_domains(grid)
+domains = propagate_constraints(domains)
+
+# Solve the Sudoku puzzle with Heuristic Method
+if solve_heuristic(grid, domains):
+    print(f'\n\nSolved Sudoku puzzle with Heuristic Algorithm:')
+    print_grid(grid)
+else:
+    print("No solution exists using heuristic method")
